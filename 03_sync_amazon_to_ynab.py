@@ -25,6 +25,7 @@ DEFAULT_QUERY = (
     "newer_than:30d"
 )
 CACHE_VERSION = "v2"
+SPLIT_PARENT_MEMO = "[Split Charge]"
 
 
 class Tee:
@@ -1455,7 +1456,7 @@ def main():
             else []
         )
         desired_category_id = choose_primary_category_id(items, category_map) if not desired_splits else None
-        memo = "Amazon split charge" if desired_splits else compose_memo(c, summary, items, use_markdown)
+        memo = SPLIT_PARENT_MEMO if desired_splits else compose_memo(c, summary, items, use_markdown)
         existing = tx.get("memo") or ""
         old_payee = tx.get("payee_name") or ""
         tx_id = tx.get("id")
@@ -1628,7 +1629,7 @@ def main():
             else []
         )
         desired_category_id = choose_primary_category_id(items, category_map) if not desired_splits else None
-        memo = "Amazon split charge" if desired_splits else compose_memo(candidate, summary, items, use_markdown)
+        memo = SPLIT_PARENT_MEMO if desired_splits else compose_memo(candidate, summary, items, use_markdown)
         existing = tx.get("memo") or ""
         old_payee = tx.get("payee_name") or ""
         tx_id = tx.get("id")
