@@ -978,6 +978,28 @@ def choose_primary_category_id(items: list[dict], category_map: dict[str, str]) 
     return max(scores, key=scores.get)
 
 
+def force_single_split_for_all_strategy(
+    desired_splits: list[dict],
+    split_strategy: str,
+    tx_amount_milli: int | None,
+    items: list[dict],
+    category_map: dict[str, str],
+) -> list[dict]:
+    strategy = (split_strategy or "conservative").strip().lower()
+    if strategy != "all" or desired_splits:
+        return desired_splits
+    if not isinstance(tx_amount_milli, int) or tx_amount_milli == 0:
+        return desired_splits
+
+    category_id = choose_primary_category_id(items, category_map) or category_map.get("shopping")
+    if not category_id:
+        return desired_splits
+
+    first_name = (items[0].get("name") if items else None) or "Amazon Item"
+    memo = format_item_for_memo({"name": first_name, "amount": f"${abs(tx_amount_milli) / 1000:.2f}"})
+    return [{"amount": tx_amount_milli, "category_id": category_id, "memo": memo[:200]}]
+
+
 def filter_transactions_by_payee(
     transactions: list[dict],
     target_payee_exact: str | None,
@@ -1104,7 +1126,7 @@ def should_use_splits_for_transaction(
     if strategy in {"off", "none", "false", "0"}:
         return False
     if strategy == "all":
-        return len(items) >= 2
+        return isinstance(tx_amount_milli, int) and tx_amount_milli != 0
 
     # Conservative mode: split only when itemization is small and high-confidence.
     if not isinstance(tx_amount_milli, int) or tx_amount_milli == 0:
@@ -1455,6 +1477,13 @@ def main():
             if allow_splits_here
             else []
         )
+        desired_splits = force_single_split_for_all_strategy(
+            desired_splits,
+            split_strategy,
+            tx.get("amount"),
+            items,
+            category_map,
+        )
         desired_category_id = choose_primary_category_id(items, category_map) if not desired_splits else None
         memo = SPLIT_PARENT_MEMO if desired_splits else compose_memo(c, summary, items, use_markdown)
         existing = tx.get("memo") or ""
@@ -1627,6 +1656,13 @@ def main():
             )
             if allow_splits_here
             else []
+        )
+        desired_splits = force_single_split_for_all_strategy(
+            desired_splits,
+            split_strategy,
+            tx.get("amount"),
+            items,
+            category_map,
         )
         desired_category_id = choose_primary_category_id(items, category_map) if not desired_splits else None
         memo = SPLIT_PARENT_MEMO if desired_splits else compose_memo(candidate, summary, items, use_markdown)
