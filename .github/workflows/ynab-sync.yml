@@ -39,8 +39,8 @@ on:
         type: choice
         options: ["off", "conservative", "all"]
   schedule:
-    # Daily at 14:30 UTC (adjust as needed)
-    - cron: "30 14 * * *"
+    # Every 6 hours at :30 UTC (4 runs/day)
+    - cron: "30 */6 * * *"
 
 jobs:
   sync:
