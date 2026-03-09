@@ -25,7 +25,7 @@ DEFAULT_QUERY = (
     "newer_than:30d"
 )
 CACHE_VERSION = "v2"
-SPLIT_PARENT_MEMO = "[Split Charge]"
+SPLIT_PARENT_MEMO = ""
 
 
 class Tee:
