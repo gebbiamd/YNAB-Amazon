@@ -93,6 +93,13 @@ def env_bool(*names: str, default: bool = False) -> bool:
 
 
 def get_gmail_service():
+    import os
+    from pathlib import Path
+    from google.oauth2.credentials import Credentials
+    from google.auth.transport.requests import Request
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from googleapiclient.discovery import build
+
     creds = None
     token_path = Path("token.json")
     creds_path = Path("credentials.json")
@@ -100,26 +107,26 @@ def get_gmail_service():
     if token_path.exists():
         creds = Credentials.from_authorized_user_file(str(token_path), GMAIL_SCOPES)
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            try:
-                creds.refresh(Request())
-            except (RefreshError, TransportError):
-                # Token refresh can fail after revocation/expiry or transient OAuth
-                # transport issues. Fall back to interactive re-auth.
-                creds = None
-        else:
-            pass
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
-        if not creds or not creds.valid:
-            if not creds_path.exists():
-                raise FileNotFoundError("Missing credentials.json in this folder.")
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), GMAIL_SCOPES)
-            creds = flow.run_local_server(port=0)
+    if not creds or not creds.valid:
+        # 🚫 BLOCK browser login in GitHub Actions
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            raise RuntimeError(
+                "Gmail token invalid. Regenerate token.json locally and update GitHub secret."
+            )
+
+        if not creds_path.exists():
+            raise FileNotFoundError("Missing credentials.json in this folder.")
+
+        flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), GMAIL_SCOPES)
+        creds = flow.run_local_server(port=0)
+
         token_path.write_text(creds.to_json(), encoding="utf-8")
 
     return build("gmail", "v1", credentials=creds)
-
+    
 
 def _decode_base64url(data: str) -> bytes:
     return base64.urlsafe_b64decode(data.encode("utf-8"))
