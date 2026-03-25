@@ -1005,7 +1005,8 @@ def build_report_html(
             f"<td><span class='pill-money'>${o.amount:,.2f}</span></td><td><span class='pill-money'>${o.baseline_mean:,.2f}</span></td><td>{o.reason}</td>"
             f"<td><span class='ai-note'>{render_inline_formatting(str(outlier_assessment.get(f'{o.date}|{o.payee_name.lower()}', {}).get('reason', '')))}</span> "
             f"<span class='conf'>({float(outlier_assessment.get(f'{o.date}|{o.payee_name.lower()}', {}).get('confidence', 0.5)):.0%})</span>"
-            f"{('<br><span class=\"memo\">Memo: ' + html.escape(o.memo) + '</span>') if o.memo else ''}</td></tr>"
+            + (f"<br><span class='memo'>Memo: {html.escape(o.memo)}</span>" if o.memo else "")
+            + "</td></tr>"
         )
         for o in outliers[:12]
     )
