@@ -6,7 +6,8 @@ import os
 import re
 import sys
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
+UTC = timezone.utc
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from urllib import error, parse, request
@@ -77,7 +78,7 @@ def load_dotenv(path: str = ".env"):
             os.environ[key] = value
 
 
-def env_first(*names: str, default: str | None = None) -> str | None:
+def env_first(*names: str, default=None):
     for name in names:
         value = os.getenv(name)
         if value is not None and value != "":
@@ -108,21 +109,22 @@ def get_gmail_service():
         creds = Credentials.from_authorized_user_file(str(token_path), GMAIL_SCOPES)
 
     if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
+        try:
+            creds.refresh(Request())
+        except (RefreshError, TransportError):
+            creds = None
 
     if not creds or not creds.valid:
-        # 🚫 BLOCK browser login in GitHub Actions
         if os.environ.get("GITHUB_ACTIONS") == "true":
             raise RuntimeError(
-                "Gmail token invalid. Regenerate token.json locally and update GitHub secret."
+                "Invalid Gmail token in GitHub Actions. Regenerate token.json locally and update GMAIL_TOKEN_JSON."
             )
 
         if not creds_path.exists():
             raise FileNotFoundError("Missing credentials.json in this folder.")
 
         flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), GMAIL_SCOPES)
-        creds = flow.run_local_server(port=0)
-
+        creds = flow.run_local_server(port=0, prompt="consent")
         token_path.write_text(creds.to_json(), encoding="utf-8")
 
     return build("gmail", "v1", credentials=creds)
@@ -211,7 +213,7 @@ def guess_category(subject: str, body: str) -> str:
     return "Shopping"
 
 
-def to_milliunits(total_str: str) -> int | None:
+def to_milliunits(total_str: str):
     if not total_str:
         return None
     try:
@@ -221,7 +223,7 @@ def to_milliunits(total_str: str) -> int | None:
     return int(amount * 1000)
 
 
-def ynab_request(method: str, path: str, token: str, payload: dict | None = None):
+def ynab_request(method: str, path: str, token: str, payload=None):
     url = f"https://api.ynab.com/v1{path}"
     body = None
     headers = {
@@ -256,7 +258,7 @@ def ynab_request(method: str, path: str, token: str, payload: dict | None = None
             raise RuntimeError(f"YNAB API error {e.code}: {detail}") from e
 
 
-def load_ynab_transactions(token: str, budget_id: str, since_date: str, account_id: str | None):
+def load_ynab_transactions(token: str, budget_id: str, since_date: str, account_id=None):
     q = parse.urlencode({"since_date": since_date})
     if account_id:
         path = f"/budgets/{budget_id}/accounts/{account_id}/transactions?{q}"
@@ -291,9 +293,9 @@ def update_ynab_transaction(
     budget_id: str,
     tx_id: str,
     memo: str,
-    new_payee_name: str | None,
-    split_subtransactions: list[dict] | None = None,
-    new_category_id: str | None = None,
+    new_payee_name: str ,
+    split_subtransactions: list[dict]  = None,
+    new_category_id: str  = None,
 ):
     path = f"/budgets/{budget_id}/transactions/{tx_id}"
     transaction = {"memo": memo}
@@ -334,8 +336,8 @@ def force_unsplit_transaction(
     budget_id: str,
     tx_detail: dict,
     memo: str,
-    new_payee_name: str | None,
-    new_category_id: str | None,
+    new_payee_name: str ,
+    new_category_id: str ,
 ):
     tx_id = tx_detail.get("id")
     if not tx_id:
@@ -433,7 +435,7 @@ def search_candidate_for_transaction(
     max_delta_days: int = 21,
     query_window_days: int = 21,
     max_amount_gap_milli: int = 200,
-) -> dict | None:
+) -> dict :
     tx_amount = tx.get("amount")
     tx_date = tx.get("date")
     if not isinstance(tx_amount, int) or not tx_date:
@@ -630,7 +632,7 @@ def find_best_match(
     return best
 
 
-def ai_summarize_candidate(candidate: dict, api_key: str, model: str, charge_amount: str | None = None):
+def ai_summarize_candidate(candidate: dict, api_key: str, model: str, charge_amount: str  = None):
     url = "https://api.openai.com/v1/chat/completions"
     prompt = (
         "You classify Amazon purchases for personal budgeting. "
@@ -825,7 +827,7 @@ def infer_item_category(item_name: str, fallback_category: str) -> str:
     return map_to_user_category(fallback_category)
 
 
-def _amount_to_float(amount_text: str | None) -> float | None:
+def _amount_to_float(amount_text):
     if not amount_text:
         return None
     try:
@@ -898,7 +900,7 @@ def pick_items_for_charge(items: list[dict], tx_amount_milli: int, tolerance_mil
     return selected or items
 
 
-def compress_items_for_charge(items: list[dict], tx_amount_milli: int | None) -> list[dict]:
+def compress_items_for_charge(items: list[dict], tx_amount_milli: int ) -> list[dict]:
     # Merge duplicate item rows and scale totals to the exact charge amount.
     if not items:
         return items
@@ -968,7 +970,7 @@ def compress_items_for_charge(items: list[dict], tx_amount_milli: int | None) ->
     return out
 
 
-def choose_primary_category_id(items: list[dict], category_map: dict[str, str]) -> str | None:
+def choose_primary_category_id(items: list[dict], category_map: dict[str, str]) -> str :
     if not items:
         return None
     scores: dict[str, int] = {}
@@ -988,7 +990,7 @@ def choose_primary_category_id(items: list[dict], category_map: dict[str, str]) 
 def force_single_split_for_all_strategy(
     desired_splits: list[dict],
     split_strategy: str,
-    tx_amount_milli: int | None,
+    tx_amount_milli: int ,
     items: list[dict],
     category_map: dict[str, str],
 ) -> list[dict]:
@@ -1009,7 +1011,7 @@ def force_single_split_for_all_strategy(
 
 def filter_transactions_by_payee(
     transactions: list[dict],
-    target_payee_exact: str | None,
+    target_payee_exact: str ,
     contains_term: str,
     exclude_prime: bool,
     mode: str,
@@ -1125,7 +1127,7 @@ def build_split_subtransactions(
 
 def should_use_splits_for_transaction(
     items: list[dict],
-    tx_amount_milli: int | None,
+    tx_amount_milli: int ,
     category_map: dict[str, str],
     split_strategy: str,
 ) -> bool:
@@ -1194,7 +1196,7 @@ def split_changed(tx: dict, desired_splits: list[dict]) -> bool:
     return current != target
 
 
-def compose_memo(candidate: dict, summary: str | None, items: list[dict], markdown: bool) -> str:
+def compose_memo(candidate: dict, summary: str , items: list[dict], markdown: bool) -> str:
     clean_items = []
     seen = set()
     for item in items:
