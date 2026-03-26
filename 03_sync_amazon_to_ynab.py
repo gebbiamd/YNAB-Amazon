@@ -371,6 +371,41 @@ def force_unsplit_transaction(
     ynab_request("PUT", f"/budgets/{budget_id}/transactions/{tx_id}", token, {"transaction": payload_tx})
 
 
+def force_replace_split_transaction(
+    token: str,
+    budget_id: str,
+    tx_detail: dict,
+    memo: str,
+    new_payee_name: str,
+    split_subtransactions: list[dict],
+):
+    tx_id = tx_detail.get("id")
+    if not tx_id:
+        return
+
+    payload_tx = {
+        "account_id": tx_detail.get("account_id"),
+        "date": tx_detail.get("date"),
+        "amount": tx_detail.get("amount"),
+        "cleared": tx_detail.get("cleared"),
+        "approved": tx_detail.get("approved"),
+        "flag_color": tx_detail.get("flag_color"),
+        "import_id": tx_detail.get("import_id"),
+        "memo": memo,
+        "subtransactions": split_subtransactions,
+    }
+
+    if new_payee_name:
+        payload_tx["payee_name"] = new_payee_name
+    elif tx_detail.get("payee_id"):
+        payload_tx["payee_id"] = tx_detail.get("payee_id")
+    elif tx_detail.get("payee_name"):
+        payload_tx["payee_name"] = tx_detail.get("payee_name")
+
+    payload_tx = {k: v for k, v in payload_tx.items() if v is not None}
+    ynab_request("PUT", f"/budgets/{budget_id}/transactions/{tx_id}", token, {"transaction": payload_tx})
+
+
 def fetch_amazon_candidates(service, query: str, max_results: int):
     messages = []
     page_token = None
@@ -1537,7 +1572,20 @@ def main():
             elif use_splits and existing_has_splits and not desired_splits:
                 # Force-clear stale splits whenever desired state is non-split.
                 split_payload = []
-            if split_payload == [] and existing_has_splits:
+            if split_payload and existing_has_splits:
+                try:
+                    force_replace_split_transaction(
+                        ynab_token,
+                        budget_id,
+                        tx_for_compare,
+                        memo,
+                        completed_payee if wants_payee_change else None,
+                        split_payload,
+                    )
+                    applied += 1
+                except Exception as e:
+                    print(f"WARN Apply failed for tx {tx.get('id')}: {e}")
+            elif split_payload == [] and existing_has_splits:
                 try:
                     force_unsplit_transaction(
                         ynab_token,
@@ -1718,7 +1766,20 @@ def main():
             elif use_splits and existing_has_splits and not desired_splits:
                 # Force-clear stale splits whenever desired state is non-split.
                 split_payload = []
-            if split_payload == [] and existing_has_splits:
+            if split_payload and existing_has_splits:
+                try:
+                    force_replace_split_transaction(
+                        ynab_token,
+                        budget_id,
+                        tx_for_compare,
+                        memo,
+                        completed_payee if wants_payee_change else None,
+                        split_payload,
+                    )
+                    applied += 1
+                except Exception as e:
+                    print(f"WARN Apply failed for tx {tx.get('id')}: {e}")
+            elif split_payload == [] and existing_has_splits:
                 try:
                     force_unsplit_transaction(
                         ynab_token,
