@@ -6,7 +6,7 @@ on:
       apply:
         description: "Write updates to YNAB (true) or dry-run (false)"
         required: true
-        default: "false"
+        default: "true"
         type: choice
         options: ["false", "true"]
       months_back:
@@ -18,13 +18,13 @@ on:
       coverage:
         description: "gaps (safer) or all"
         required: true
-        default: "gaps"
+        default: "all"
         type: choice
         options: ["gaps", "all"]
       depth:
         description: "normal (faster) or deep"
         required: true
-        default: "normal"
+        default: "deep"
         type: choice
         options: ["normal", "deep"]
       days_back:
@@ -35,7 +35,7 @@ on:
       split_strategy:
         description: "Split strategy"
         required: true
-        default: "conservative"
+        default: "all"
         type: choice
         options: ["off", "conservative", "all"]
   schedule:
