@@ -1295,8 +1295,8 @@ def build_email_friendly_html(
     if len(actions) < 3:
         actions = (ai.get("action_plan", []) or [])[:3]
 
-    dashboard_latest = f"{dashboard_base_url}/latest"
-    report_url = f"{dashboard_base_url}/report/{report_id}"
+    dashboard_latest = f"{dashboard_base_url}/latest/"
+    report_url = f"{dashboard_base_url}/report/{report_id}/"
     reference = current_budget if current_budget > 0 else average_spend
     reference_label = "Budget Target" if current_budget > 0 else "Avg Monthly Spend"
     ratio = (projected / reference) if reference > 0 else 0.0
@@ -2467,7 +2467,7 @@ def archive_report(output_path: Path, html: str, budget_name: str, metrics: dict
             "overspent_count": metrics.get("overspent_count", 0),
             "months": metrics.get("months", []),
             "path": str(archive_path),
-            "dashboard_url": f"{dashboard_base_url}/report/{report_id}",
+            "dashboard_url": f"{dashboard_base_url}/report/{report_id}/",
         }
     )
     index["reports"] = reports[-200:]
@@ -2604,7 +2604,7 @@ def main() -> None:
         recurring_b64=recurring_b64,
         goal_heatmap_b64=goal_heatmap_b64,
         waste_radar_b64=waste_radar_b64,
-        dashboard_latest_url=f"{dashboard_base_url}/latest",
+        dashboard_latest_url=f"{dashboard_base_url}/latest/",
     )
 
     output_path = Path(args.output)
@@ -2649,8 +2649,8 @@ def main() -> None:
     )
     print(f"Archived report: {archive_path}")
     print(f"Debug log: {debug_log_path}")
-    print(f"Dashboard latest: {dashboard_base_url}/latest")
-    print(f"Dashboard report: {dashboard_base_url}/report/{report_id}")
+    print(f"Dashboard latest: {dashboard_base_url}/latest/")
+    print(f"Dashboard report: {dashboard_base_url}/report/{report_id}/")
 
     if args.skip_email or not args.email_to:
         print("Email send skipped.")

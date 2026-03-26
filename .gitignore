@@ -18,4 +18,5 @@ token_send.json
 # Local runtime outputs
 logs/
 reports/
+site/
 .DS_Store

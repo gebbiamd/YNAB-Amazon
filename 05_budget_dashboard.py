@@ -174,8 +174,8 @@ def dashboard_home():
       <p class="muted">Run reports, email results, and open history from one place.</p>
       {% if latest %}
       <div class="actions">
-        <a class="btn" href="/latest">Open Latest Report</a>
-        <a class="btn secondary" href="/report/{{ latest.id }}">Open Report {{ latest.id }}</a>
+        <a class="btn" href="/latest/">Open Latest Report</a>
+        <a class="btn secondary" href="/report/{{ latest.id }}/">Open Report {{ latest.id }}</a>
       </div>
       <div class="kpis">
         <div class="kpi"><div class="label">Latest Run</div><div class="value" style="font-size:16px">{{ latest.created_at }}</div></div>
@@ -205,7 +205,7 @@ def dashboard_home():
       {% if run_ok is not none %}
         <p class="{{ 'ok' if run_ok else 'bad' }}">{{ 'Run completed' if run_ok else 'Run failed' }}</p>
         {% if run_ok and run_latest_id %}
-          <p><a class="btn secondary" href="/report/{{ run_latest_id }}">Open Newly Generated Report</a></p>
+          <p><a class="btn secondary" href="/report/{{ run_latest_id }}/">Open Newly Generated Report</a></p>
         {% endif %}
         <pre>{{ run_output }}</pre>
       {% endif %}
@@ -232,7 +232,7 @@ def dashboard_home():
             <td>${{ "{:,.2f}".format(r.current_month_spend or 0) }}</td>
             <td>${{ "{:,.2f}".format(r.average_spend or 0) }}</td>
             <td>{{ r.overspent_count or 0 }}</td>
-            <td><a href="/report/{{ r.id }}">Open</a></td>
+            <td><a href="/report/{{ r.id }}/">Open</a></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -259,14 +259,16 @@ def dashboard_home():
 
 
 @app.route("/latest")
+@app.route("/latest/")
 def dashboard_latest():
     reports = load_reports()
     if not reports:
         return redirect("/")
-    return redirect(f"/report/{reports[0]['id']}")
+    return redirect(f"/report/{reports[0]['id']}/")
 
 
 @app.route("/report/<report_id>")
+@app.route("/report/<report_id>/")
 def dashboard_report(report_id: str):
     normalized = report_id.replace("_", "")
     if not normalized.isdigit():

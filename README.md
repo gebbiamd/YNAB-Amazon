@@ -156,3 +156,25 @@ Set these in: `Repo -> Settings -> Secrets and variables -> Actions -> Variables
 ### Important OAuth note
 
 Cloud runs rely on `GMAIL_TOKEN_JSON` refresh token validity. If Google revokes/expires it, regenerate token locally and update the GitHub secret.
+
+## GitHub Pages Report Site
+
+This repo also includes a static-site publisher workflow: `.github/workflows/budget-report-pages.yml`
+
+- Manual run: GitHub -> Actions -> `Budget Report Pages` -> `Run workflow`
+- Scheduled run: every Monday at `13:00 UTC`
+- Publish target: `gh-pages` branch
+
+Required secrets:
+
+- `YNAB_API_KEY`
+- `YNAB_BUDGET_ID`
+- `OPENAI_API_KEY`
+
+One-time GitHub setup:
+
+- Go to `Repo -> Settings -> Pages`
+- Set `Source` to `Deploy from a branch`
+- Choose branch `gh-pages` and folder `/ (root)`
+
+The workflow preserves prior published reports from `gh-pages`, generates a fresh report, builds a static archive site, and republishes it for phone-friendly access.
