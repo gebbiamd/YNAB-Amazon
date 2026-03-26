@@ -142,6 +142,9 @@ jobs:
           export ynab_payee_name_to_be_processed="${YNAB_PAYEE_NAME_TO_BE_PROCESSED:-}"
           export ynab_payee_name_processing_completed="${YNAB_PAYEE_NAME_PROCESSING_COMPLETED:-}"
           export openai_api_key="${OPENAI_API_KEY:-}"
+          if [ -n "${OPENAI_API_KEY:-}" ]; then
+            export use_ai_summarization="true"
+          fi
           export ynab_use_splits="true"
           export ynab_split_strategy="$SPLIT_STRATEGY"
           export GMAIL_QUERY="${GMAIL_QUERY:-in:\"YNAB Amazon\" newer_than:30d}"
