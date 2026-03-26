@@ -160,6 +160,20 @@ jobs:
           echo "Running: python ${ARGS[*]}"
           python "${ARGS[@]}"
 
+      - name: Show log tail
+        if: always()
+        run: |
+          set -euo pipefail
+          latest_log="$(ls -t logs/*.log 2>/dev/null | head -n 1 || true)"
+          if [ -n "$latest_log" ]; then
+            echo "Latest log: $latest_log"
+            echo "----- LOG TAIL START -----"
+            tail -n 200 "$latest_log"
+            echo "----- LOG TAIL END -----"
+          else
+            echo "No log file found."
+          fi
+
       - name: Upload logs artifact
         if: always()
         uses: actions/upload-artifact@v6
