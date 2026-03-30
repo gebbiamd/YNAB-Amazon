@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YNAB Budget Reports</title>
+  <style>
+    :root {
+      --bg:#eef6f4;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#475569;
+      --accent:#0f766e;
+      --accent2:#2563eb;
+      --border:#dbe4e6;
+    }
+    body {
+      margin:0;
+      color:var(--ink);
+      font-family:"Avenir Next","Segoe UI",sans-serif;
+      background:
+        radial-gradient(1200px 400px at 20% -10%, #d1fae5 0%, transparent 60%),
+        radial-gradient(900px 300px at 90% 0%, #dbeafe 0%, transparent 50%),
+        var(--bg);
+    }
+    .wrap { max-width:1100px; margin:0 auto; padding:24px; }
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:0 8px 22px rgba(15,118,110,.08);
+    }
+    .hero {
+      background:linear-gradient(135deg,#ecfeff,#f0fdf4);
+      border-color:#bae6fd;
+    }
+    h1 { margin:0; color:var(--accent); font-size:40px; line-height:1.05; letter-spacing:-.02em; }
+    h3 { margin:0 0 8px; font-size:22px; line-height:1.1; }
+    .muted { color:var(--muted); }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .btn {
+      display:inline-block;
+      border:0;
+      border-radius:10px;
+      padding:11px 14px;
+      font-weight:800;
+      text-decoration:none;
+      color:#fff;
+      background:var(--accent);
+    }
+    .btn.secondary { background:var(--accent2); }
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:14px; }
+    .kpi {
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#ffffff;
+    }
+    .kpi .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+    .kpi .value { margin-top:4px; font-size:24px; font-weight:900; color:#0b4b47; }
+    .kpi .value.small { font-size:16px; }
+    .kpi .value.medium { font-size:20px; }
+    .pill {
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      background:#ecfeff;
+      color:#0e7490;
+      border:1px solid #bae6fd;
+    }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid var(--border); padding:10px; text-align:left; }
+    th { background:#f0f7f6; color:#0b4b47; font-size:13px; text-transform:uppercase; letter-spacing:.04em; }
+    a { color:#0f766e; font-weight:800; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    code { background:#e2e8f0; padding:2px 6px; border-radius:6px; }
+    @media (max-width:760px) {
+      h1 { font-size:30px; }
+      .wrap { padding:14px; }
+      .kpi .value { font-size:20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card hero">
+      <h1>YNAB Budget Reports</h1>
+      <p class="muted">Static weekly report archive published from GitHub Actions.</p>
+      
+      <div class="actions">
+        <a class="btn" href="https://gebbiamd.github.io/YNAB-Amazon/latest/">Open Latest Report</a>
+        <a class="btn secondary" href="https://gebbiamd.github.io/YNAB-Amazon/report/20260330_161545/">Open Report 20260330_161545</a>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">Latest Run</div><div class="value small">2026-03-30T16:15:45</div></div>
+        <div class="kpi"><div class="label">Budget</div><div class="value medium">Fresh start</div></div>
+        <div class="kpi"><div class="label">Current Spend</div><div class="value">$3,137.19</div></div>
+        <div class="kpi"><div class="label">Avg Spend</div><div class="value">$3,004.87</div></div>
+      </div>
+        
+    </div>
+    <div class="card">
+      <h3>Report History <span class="pill">2 runs</span></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Budget</th>
+            <th>Current Month Spend</th>
+            <th>Average Spend</th>
+            <th>Overspent Categories</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-03-30T16:15:45</td><td>Fresh start</td><td>$3,137.19</td><td>$3,004.87</td><td>1</td><td><a href="https://gebbiamd.github.io/YNAB-Amazon/report/20260330_161545/">Open</a></td></tr><tr><td>2026-03-26T20:10:39</td><td>Fresh start</td><td>$2,968.67</td><td>$2,962.74</td><td>1</td><td><a href="https://gebbiamd.github.io/YNAB-Amazon/report/20260326_201039/">Open</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
