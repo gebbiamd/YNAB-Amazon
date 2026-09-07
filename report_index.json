@@ -1,0 +1,410 @@
+{
+  "reports": [
+    {
+      "id": "20260907_180229",
+      "created_at": "2026-09-07T18:02:29",
+      "budget_name": "Fresh start",
+      "current_month_spend": 731.34,
+      "average_spend": 7135.58,
+      "overspent_count": 4,
+      "months": [
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09"
+      ],
+      "path": "report/20260907_180229/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260907_180229/"
+    },
+    {
+      "id": "20260831_192058",
+      "created_at": "2026-08-31T19:20:58",
+      "budget_name": "Fresh start",
+      "current_month_spend": 3829.42,
+      "average_spend": 7593.52,
+      "overspent_count": 15,
+      "months": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08"
+      ],
+      "path": "report/20260831_192058/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260831_192058/"
+    },
+    {
+      "id": "20260824_134515",
+      "created_at": "2026-08-24T13:45:15",
+      "budget_name": "Fresh start",
+      "current_month_spend": 3044.24,
+      "average_spend": 7462.65,
+      "overspent_count": 13,
+      "months": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08"
+      ],
+      "path": "report/20260824_134515/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260824_134515/"
+    },
+    {
+      "id": "20260817_133503",
+      "created_at": "2026-08-17T13:35:03",
+      "budget_name": "Fresh start",
+      "current_month_spend": 2258.12,
+      "average_spend": 7331.63,
+      "overspent_count": 12,
+      "months": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08"
+      ],
+      "path": "report/20260817_133503/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260817_133503/"
+    },
+    {
+      "id": "20260810_141725",
+      "created_at": "2026-08-10T14:17:25",
+      "budget_name": "Fresh start",
+      "current_month_spend": 774.94,
+      "average_spend": 7026.98,
+      "overspent_count": 8,
+      "months": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08"
+      ],
+      "path": "report/20260810_141725/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260810_141725/"
+    },
+    {
+      "id": "20260803_153957",
+      "created_at": "2026-08-03T15:39:57",
+      "budget_name": "Fresh start",
+      "current_month_spend": 195.09,
+      "average_spend": 6930.34,
+      "overspent_count": 4,
+      "months": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08"
+      ],
+      "path": "report/20260803_153957/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260803_153957/"
+    },
+    {
+      "id": "20260727_153846",
+      "created_at": "2026-07-27T15:38:46",
+      "budget_name": "Fresh start",
+      "current_month_spend": 16692.28,
+      "average_spend": 7367.99,
+      "overspent_count": 10,
+      "months": [
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "path": "report/20260727_153846/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260727_153846/"
+    },
+    {
+      "id": "20260720_150621",
+      "created_at": "2026-07-20T15:06:21",
+      "budget_name": "Fresh start",
+      "current_month_spend": 15943.36,
+      "average_spend": 7243.18,
+      "overspent_count": 7,
+      "months": [
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "path": "report/20260720_150621/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260720_150621/"
+    },
+    {
+      "id": "20260713_153922",
+      "created_at": "2026-07-13T15:39:22",
+      "budget_name": "Fresh start",
+      "current_month_spend": 13768.65,
+      "average_spend": 6880.72,
+      "overspent_count": 6,
+      "months": [
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "path": "report/20260713_153922/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260713_153922/"
+    },
+    {
+      "id": "20260706_161537",
+      "created_at": "2026-07-06T16:15:37",
+      "budget_name": "Fresh start",
+      "current_month_spend": 4882.32,
+      "average_spend": 5399.67,
+      "overspent_count": 3,
+      "months": [
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "path": "report/20260706_161537/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260706_161537/"
+    },
+    {
+      "id": "20260629_163603",
+      "created_at": "2026-06-29T16:36:03",
+      "budget_name": "Fresh start",
+      "current_month_spend": 5340.11,
+      "average_spend": 4970.04,
+      "overspent_count": 6,
+      "months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "path": "report/20260629_163603/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260629_163603/"
+    },
+    {
+      "id": "20260622_172727",
+      "created_at": "2026-06-22T17:27:27",
+      "budget_name": "Fresh start",
+      "current_month_spend": 4429.48,
+      "average_spend": 4818.26,
+      "overspent_count": 5,
+      "months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "path": "report/20260622_172727/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260622_172727/"
+    },
+    {
+      "id": "20260615_175105",
+      "created_at": "2026-06-15T17:51:05",
+      "budget_name": "Fresh start",
+      "current_month_spend": 3314.76,
+      "average_spend": 4632.48,
+      "overspent_count": 3,
+      "months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "path": "report/20260615_175105/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260615_175105/"
+    },
+    {
+      "id": "20260608_164538",
+      "created_at": "2026-06-08T16:45:38",
+      "budget_name": "Fresh start",
+      "current_month_spend": 1550.19,
+      "average_spend": 4338.38,
+      "overspent_count": 1,
+      "months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "path": "report/20260608_164538/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260608_164538/"
+    },
+    {
+      "id": "20260601_183453",
+      "created_at": "2026-06-01T18:34:53",
+      "budget_name": "Fresh start",
+      "current_month_spend": 0.0,
+      "average_spend": 4067.98,
+      "overspent_count": 0,
+      "months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "path": "report/20260601_183453/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260601_183453/"
+    },
+    {
+      "id": "20260525_154625",
+      "created_at": "2026-05-25T15:46:25",
+      "budget_name": "Fresh start",
+      "current_month_spend": 10857.19,
+      "average_spend": 4256.23,
+      "overspent_count": 5,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05"
+      ],
+      "path": "report/20260525_154625/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260525_154625/"
+    },
+    {
+      "id": "20260504_150836",
+      "created_at": "2026-05-04T15:08:36",
+      "budget_name": "Fresh start",
+      "current_month_spend": 177.41,
+      "average_spend": 2474.24,
+      "overspent_count": 0,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05"
+      ],
+      "path": "report/20260504_150836/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260504_150836/"
+    },
+    {
+      "id": "20260427_150339",
+      "created_at": "2026-04-27T15:03:39",
+      "budget_name": "Fresh start",
+      "current_month_spend": 1675.1,
+      "average_spend": 2829.87,
+      "overspent_count": 4,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "path": "report/20260427_150339/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260427_150339/"
+    },
+    {
+      "id": "20260420_144517",
+      "created_at": "2026-04-20T14:45:17",
+      "budget_name": "Fresh start",
+      "current_month_spend": 1483.15,
+      "average_spend": 2791.48,
+      "overspent_count": 2,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "path": "report/20260420_144517/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260420_144517/"
+    },
+    {
+      "id": "20260413_164634",
+      "created_at": "2026-04-13T16:46:34",
+      "budget_name": "Fresh start",
+      "current_month_spend": 972.1,
+      "average_spend": 2689.27,
+      "overspent_count": 1,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "path": "report/20260413_164634/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260413_164634/"
+    },
+    {
+      "id": "20260406_153424",
+      "created_at": "2026-04-06T15:34:24",
+      "budget_name": "Fresh start",
+      "current_month_spend": 8.46,
+      "average_spend": 2496.54,
+      "overspent_count": 1,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "path": "report/20260406_153424/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260406_153424/"
+    },
+    {
+      "id": "20260330_161545",
+      "created_at": "2026-03-30T16:15:45",
+      "budget_name": "Fresh start",
+      "current_month_spend": 3137.19,
+      "average_spend": 3004.87,
+      "overspent_count": 1,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03"
+      ],
+      "path": "report/20260330_161545/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260330_161545/"
+    },
+    {
+      "id": "20260326_201039",
+      "created_at": "2026-03-26T20:10:39",
+      "budget_name": "Fresh start",
+      "current_month_spend": 2968.67,
+      "average_spend": 2962.74,
+      "overspent_count": 1,
+      "months": [
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03"
+      ],
+      "path": "report/20260326_201039/index.html",
+      "dashboard_url": "https://gebbiamd.github.io/YNAB-Amazon/report/20260326_201039/"
+    }
+  ]
+}
