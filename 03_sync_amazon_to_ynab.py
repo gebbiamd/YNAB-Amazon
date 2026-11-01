@@ -25,7 +25,8 @@ DEFAULT_QUERY = (
     '(from:amazon OR from:order-update@amazon.com OR subject:("order" OR "shipped" OR "delivered" OR "receipt")) '
     "newer_than:30d"
 )
-CACHE_VERSION = "v2"
+CACHE_VERSION = "v3"
+BODY_EXCERPT_CHARS = 12000
 SPLIT_PARENT_MEMO = ""
 
 
@@ -135,6 +136,11 @@ def _decode_base64url(data: str) -> bytes:
 
 
 def extract_best_body_text(payload: dict) -> str:
+    # Collect every text part, then keep the most detailed one. Emails usually ship a
+    # sparse text/plain alternative alongside the HTML; the HTML is what lists each item
+    # with its price, so picking the first part found can hide prices from the AI.
+    texts: list[str] = []
+
     def walk_parts(part):
         mime = part.get("mimeType", "")
         body = part.get("body", {}) or {}
@@ -145,20 +151,21 @@ def extract_best_body_text(payload: dict) -> str:
                 raw = _decode_base64url(data)
                 text = raw.decode("utf-8", errors="replace")
             except Exception:
-                return None
-
-            if mime == "text/html":
+                text = ""
+            if text and mime == "text/html":
                 soup = BeautifulSoup(text, "html.parser")
-                return soup.get_text("\n", strip=True)
-            return text.strip()
+                text = soup.get_text("\n", strip=True)
+            text = (text or "").strip()
+            if text:
+                texts.append(text)
 
         for sub in part.get("parts", []) or []:
-            out = walk_parts(sub)
-            if out:
-                return out
-        return None
+            walk_parts(sub)
 
-    return walk_parts(payload) or ""
+    walk_parts(payload)
+    if not texts:
+        return ""
+    return max(texts, key=lambda t: (len(re.findall(r"\$\s*\d", t)), len(t)))
 
 
 def extract_headers(payload: dict) -> dict:
@@ -455,7 +462,7 @@ def fetch_amazon_candidates(service, query: str, max_results: int):
                 "email_date": email_date,
                 "email_dt": email_dt,
                 "subject": subject,
-                "body_excerpt": body[:5000],
+                "body_excerpt": body[:BODY_EXCERPT_CHARS],
                 "category_guess": guess_category(subject, body),
             }
         )
@@ -580,7 +587,7 @@ def search_candidate_for_transaction(
                     "email_date": email_date.isoformat(),
                     "email_dt": email_dt,
                     "subject": subject,
-                    "body_excerpt": body[:5000],
+                    "body_excerpt": body[:BODY_EXCERPT_CHARS],
                     "category_guess": guess_category(subject, body),
                     "match_confidence": "low" if quality == 2 else "high",
                 }
@@ -679,7 +686,12 @@ def ai_summarize_candidate(candidate: dict, api_key: str, model: str, charge_amo
         "Prefer post-tax charged item amounts when visible. "
         "If multiple products are present, assign categories PER ITEM and do not collapse all items into one category. "
         "If multiple items are returned, include amount for every item whenever possible. "
-        "If charge_amount is provided, prioritize only the subset of items likely included in that specific charge."
+        "If charge_amount is provided, prioritize only the subset of items likely included in that specific charge. "
+        "Use the real product name from the email for every item. NEVER use placeholder names such as "
+        "'Item 1', 'Item 2', 'Item', or 'Product'. If a product name is not visible anywhere, leave that item out. "
+        "Never invent amounts or divide the total evenly across items: use null when an item's price is not shown. "
+        "related_emails_text (when present) holds other emails for the same order (for example the order "
+        "confirmation for a shipping notice); use it to find item names and prices."
     )
     user_content = {
         "subject": candidate.get("subject", ""),
@@ -688,6 +700,8 @@ def ai_summarize_candidate(candidate: dict, api_key: str, model: str, charge_amo
         "charge_amount": charge_amount,
         "email_text_excerpt": candidate.get("body_excerpt", ""),
     }
+    if candidate.get("related_text"):
+        user_content["related_emails_text"] = candidate["related_text"]
     payload = {
         "model": model,
         "temperature": 0.2,
@@ -721,6 +735,54 @@ def ai_summarize_candidate(candidate: dict, api_key: str, model: str, charge_amo
     memo = normalize_summary((parsed.get("memo") or "Amazon purchase").strip()[:180])
     items = normalize_items(parsed.get("items"))
     return category, memo, items
+
+
+def items_from_subject(subject: str, category: str) -> list[dict]:
+    # Amazon subjects usually quote the first product, e.g.
+    #   Ordered: "Foo Bar Widget..." and 1 more item
+    m = re.search(r'["\u201c]([^"\u201d]{3,})["\u201d]', subject or "")
+    if not m:
+        return []
+    name = simplify_item_name(m.group(1).rstrip(". \u2026"))
+    if is_placeholder_item_name(name):
+        return []
+    more = re.search(r"and\s+(\d+)\s+more\s+items?", subject or "", flags=re.IGNORECASE)
+    if more:
+        name = f"{name} + {more.group(1)} more"
+    return [{"name": name, "amount": None, "category": infer_item_category(name, category)}]
+
+
+def attach_related_order_text(candidate: dict, order_texts: dict[str, list[tuple[str, str]]], limit: int = 12000):
+    # Give the AI the other emails for the same order (order confirmation, shipment, etc.),
+    # since a shipping notice often lacks item names/prices that the confirmation has.
+    order_id = candidate.get("order_id")
+    if not order_id or candidate.get("related_text"):
+        return
+    own = candidate.get("body_excerpt", "")
+    chunks: list[str] = []
+    total = 0
+    for subject, text in order_texts.get(order_id, []):
+        if not text or text == own:
+            continue
+        chunk = f"--- {subject} ---\n{text}"
+        if total + len(chunk) > limit:
+            chunk = chunk[: max(0, limit - total)]
+        if chunk:
+            chunks.append(chunk)
+            total += len(chunk)
+        if total >= limit:
+            break
+    if chunks:
+        candidate["related_text"] = "\n\n".join(chunks)
+
+
+def log_item_detail(tx: dict, items: list[dict]):
+    unpriced = [i for i in items if not (i.get("amount") or "").strip()]
+    if not items:
+        print(f"  WARN no item names found for tx {tx.get('id')}; memo will use the order summary")
+    elif unpriced:
+        names = ", ".join(i.get("name") or "?" for i in unpriced)
+        print(f"  WARN no prices in email for: {names}; not itemizing these (full amount kept on one row)")
 
 
 def normalize_category(category: str) -> str:
@@ -772,7 +834,11 @@ def normalize_items(raw_items) -> list[dict]:
         name = re.sub(r"\s+", " ", str(item.get("name") or "")).strip()
         if not name:
             continue
+        if is_placeholder_item_name(name):
+            continue
         name = simplify_item_name(name)
+        if is_placeholder_item_name(name):
+            continue
         category = normalize_category(str(item.get("category") or "").strip() or "Shopping")
         category = infer_item_category(name, category)
         amount = item.get("amount")
@@ -787,6 +853,16 @@ def normalize_items(raw_items) -> list[dict]:
                 amount_str = None
         out.append({"name": name[:90], "amount": amount_str, "category": category})
     return out[:12]
+
+
+PLACEHOLDER_ITEM_RE = re.compile(
+    r"^(?:(?:amazon|walgreens)\s+)?(?:item|items|product|products|unknown(?:\s+item)?|purchase|n/?a)\s*#?\s*\d*$",
+    re.IGNORECASE,
+)
+
+
+def is_placeholder_item_name(name: str) -> bool:
+    return bool(PLACEHOLDER_ITEM_RE.match((name or "").strip()))
 
 
 def simplify_item_name(name: str) -> str:
@@ -935,6 +1011,24 @@ def pick_items_for_charge(items: list[dict], tx_amount_milli: int, tolerance_mil
     return selected or items
 
 
+def merge_unpriced_items(unknown: list[dict], amount_milli: int) -> dict:
+    # One row carrying a real amount (the charge, or what's left of it) and every item name.
+    names: list[str] = []
+    for u in unknown:
+        n = (u.get("name") or "").strip()
+        if n and n.lower() not in {x.lower() for x in names}:
+            names.append(n)
+    category_counts: dict[str, int] = {}
+    for u in unknown:
+        c = u.get("category") or "Shopping"
+        category_counts[c] = category_counts.get(c, 0) + 1
+    category = max(category_counts, key=category_counts.get) if category_counts else "Shopping"
+    name = " + ".join(names) if names else "Item"
+    if len(names) > 1:
+        name += " (not itemized)"
+    return {"name": name[:180], "category": category, "amount": f"${amount_milli / 1000:.2f}"}
+
+
 def compress_items_for_charge(items: list[dict], tx_amount_milli: int ) -> list[dict]:
     # Merge duplicate item rows and scale totals to the exact charge amount.
     if not items:
@@ -956,21 +1050,20 @@ def compress_items_for_charge(items: list[dict], tx_amount_milli: int ) -> list[
     target_abs = abs(tx_amount_milli) if isinstance(tx_amount_milli, int) and tx_amount_milli != 0 else None
 
     if not grouped:
-        # If all amounts are missing, still assign amounts so memo output includes prices.
+        # No item prices were found. Do NOT divide the charge evenly: that invents prices.
+        # Keep the full charge on one row that names every item.
         if target_abs and unknown:
-            per = target_abs // len(unknown)
-            remainder = target_abs - (per * len(unknown))
-            out_unknown = []
-            for i, u in enumerate(unknown):
-                amt = per + (remainder if i == 0 else 0)
-                out_unknown.append({"name": u["name"], "category": u["category"], "amount": f"${amt / 1000:.2f}"})
-            return out_unknown
+            return [merge_unpriced_items(unknown, target_abs)]
         return unknown or items
 
     values = list(grouped.values())
-    if target_abs and len(values) == 1:
+    # Only rescale priced items to the charge when every item is priced. With unpriced
+    # items present, scaling would swallow their share and drop them from the memo.
+    known_raw_total = sum(v["amount_milli"] for v in values)
+    scale_known = bool(target_abs) and (not unknown or known_raw_total > target_abs)
+    if scale_known and len(values) == 1:
         values[0]["amount_milli"] = target_abs
-    elif target_abs:
+    elif scale_known:
         current = sum(v["amount_milli"] for v in values)
         if current > 0:
             scaled = [int(round(v["amount_milli"] * target_abs / current)) for v in values]
@@ -981,16 +1074,21 @@ def compress_items_for_charge(items: list[dict], tx_amount_milli: int ) -> list[
             for i, v in enumerate(values):
                 v["amount_milli"] = scaled[i]
 
-    # If some items had unknown amounts, distribute remaining amount across them.
+    # If some items had unknown amounts, put whatever the priced items don't explain on
+    # one row naming the unpriced items, instead of guessing a price for each of them.
     if target_abs and unknown:
         known_total = sum(v["amount_milli"] for v in values)
         remaining = max(0, target_abs - known_total)
         if remaining > 0:
-            per = remaining // len(unknown)
-            remainder = remaining - (per * len(unknown))
-            for i, u in enumerate(unknown):
-                amt = per + (remainder if i == 0 else 0)
-                values.append({"name": u["name"], "category": u["category"], "amount_milli": amt})
+            merged = merge_unpriced_items(unknown, remaining)
+            values.append(
+                {
+                    "name": merged["name"],
+                    "category": merged["category"],
+                    "amount_milli": remaining,
+                }
+            )
+        unknown = []
 
     out = []
     for v in values:
@@ -1437,6 +1535,10 @@ def main():
         ynab_transactions = ynab_transactions[:80]
 
     candidates.sort(key=lambda x: x.get("email_dt") or datetime.min.replace(tzinfo=UTC))
+    order_texts: dict[str, list[tuple[str, str]]] = {}
+    for cand in candidates:
+        if cand.get("order_id"):
+            order_texts.setdefault(cand["order_id"], []).append((cand.get("subject", ""), cand.get("body_excerpt", "")))
 
     print(f"Gmail candidates: {len(candidates)}")
     print(f"YNAB transactions fetched: {len(ynab_transactions)}")
@@ -1475,6 +1577,7 @@ def main():
         items = []
         tx_amount_text = f"{abs(tx.get('amount', 0)) / 1000:.2f}" if isinstance(tx.get("amount"), int) else None
         if use_ai:
+            attach_related_order_text(c, order_texts)
             try:
                 cache_key_raw = json.dumps(
                     {
@@ -1484,6 +1587,7 @@ def main():
                         "email_date": c.get("email_date"),
                         "charge_amount": tx_amount_text,
                         "excerpt": c.get("body_excerpt", "")[:2000],
+                        "related": hashlib.sha1((c.get("related_text") or "").encode("utf-8")).hexdigest(),
                     },
                     sort_keys=True,
                 )
@@ -1504,6 +1608,9 @@ def main():
             category = normalize_category(category)
             if c.get("subject"):
                 items = [{"name": normalize_summary(c["subject"]), "amount": None, "category": category}]
+        if not items:
+            items = items_from_subject(c.get("subject", ""), normalize_category(category or "Shopping"))
+        log_item_detail(tx, items)
         if isinstance(tx.get("amount"), int):
             items = pick_items_for_charge(items, tx["amount"])
         items = compress_items_for_charge(items, tx.get("amount"))
@@ -1669,6 +1776,7 @@ def main():
         items = []
         tx_amount_text = f"{abs(tx.get('amount', 0)) / 1000:.2f}" if isinstance(tx.get("amount"), int) else None
         if use_ai:
+            attach_related_order_text(candidate, order_texts)
             try:
                 cache_key_raw = json.dumps(
                     {
@@ -1678,6 +1786,7 @@ def main():
                         "email_date": candidate.get("email_date"),
                         "charge_amount": tx_amount_text,
                         "excerpt": candidate.get("body_excerpt", "")[:2000],
+                        "related": hashlib.sha1((candidate.get("related_text") or "").encode("utf-8")).hexdigest(),
                     },
                     sort_keys=True,
                 )
@@ -1697,6 +1806,9 @@ def main():
             category = normalize_category(candidate["category_guess"])
             if candidate.get("subject"):
                 items = [{"name": normalize_summary(candidate["subject"]), "amount": None, "category": category}]
+        if not items:
+            items = items_from_subject(candidate.get("subject", ""), normalize_category(candidate.get("category_guess") or "Shopping"))
+        log_item_detail(tx, items)
         if isinstance(tx.get("amount"), int):
             items = pick_items_for_charge(items, tx["amount"])
         items = compress_items_for_charge(items, tx.get("amount"))
